@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const handleDragStart = (e) => {
             isDragging = true;
             sliderHandle.style.backgroundColor = 'var(--primary-light)'; // feedback
+            updateSliderPosition(e); // Move immediately on start
         };
 
         const handleDragEnd = () => {
@@ -108,9 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const updateSliderPosition = (e) => {
             if (!isDragging) return;
 
+            // Prevent scrolling on mobile while dragging
+            if (e.type === 'touchmove') {
+                e.preventDefault();
+            }
+
             // Determine X coordinate for mouse or touch
             let clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            if (!clientX) return;
+            if (!clientX && clientX !== 0) return;
 
             const rect = imageComparison.getBoundingClientRect();
             // Calculate percentage based on bounds
@@ -127,13 +133,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Mouse Events
         sliderHandle.addEventListener('mousedown', handleDragStart);
+        imageComparison.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            updateSliderPosition(e);
+        });
         window.addEventListener('mouseup', handleDragEnd);
         window.addEventListener('mousemove', updateSliderPosition);
 
         // Touch Events
-        sliderHandle.addEventListener('touchstart', handleDragStart, { passive: true });
+        sliderHandle.addEventListener('touchstart', handleDragStart, { passive: false });
+        imageComparison.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            updateSliderPosition(e);
+        }, { passive: false });
         window.addEventListener('touchend', handleDragEnd);
-        window.addEventListener('touchmove', updateSliderPosition, { passive: true });
+        window.addEventListener('touchmove', updateSliderPosition, { passive: false });
     }
 
     /* ==========================================================================
